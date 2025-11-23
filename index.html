@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fantasy Story Quiz</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background:#f2f4f7; }
+    .container { max-width: 900px; margin: 30px auto; background:white; padding:25px; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.1); }
+    h2 { margin-top: 0; }
+    .question { margin-bottom: 25px; }
+    .options div { margin: 6px 0; }
+    .hidden { display:none; }
+    .nav-buttons { display:flex; justify-content: space-between; margin-top:20px; }
+    button { padding:10px 20px; cursor:pointer; border:none; background:#2c63ff; color:white; border-radius:5px; }
+    button:hover { background:#1c4bd9; }
+    #story-box { padding:20px; background:#e9f0ff; border-radius:10px; margin-bottom:20px; }
+    textarea { width:100%; padding:10px; border-radius:5px; border:1px solid #ccc; }
+    .progress { text-align:right; color:#666; font-size:0.95rem; margin-bottom:10px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- LANDING -->
+    <div id="landing">
+        <h2>Enter Your Name</h2>
+        <input type="text" id="studentName" placeholder="Your name" style="padding:10px;width:50%;" required>
+        <br><br>
+        <button onclick="startQuiz()">Start Quiz</button>
+    </div>
+
+    <!-- QUIZ PAGE -->
+    <div id="quizPage" class="hidden">
+
+        <div class="progress" id="progressText"></div>
+
+        <!-- STORY SECTION -->
+        <div id="story-box">
+            <h3><b>Story: The Attack on Eldenbrook</b></h3>
+
+            <article>
+                <p>In the quiet village of <strong>Eldenbrook</strong>, which lay near the eastern border of the kingdom, lived a young mage named <strong>Liora</strong>. She was a kind girl <strong>who trained every day to control her magic</strong>, and she hoped to become a royal mage someday. Eldenbrook, <strong>which was known for its green fields and friendly people</strong>, was usually a safe place where nothing dangerous happened.</p>
+
+                <p>But early one morning, the village <strong>was attacked</strong> before sunrise. Thick smoke rose into the sky, carrying the cries of villagers <strong>who had been woken by the sudden flames</strong>. <strong>Liora</strong>, <strong>who wore a rare crest that many enemies wanted</strong>, rushed out of her small house in fear.</p>
+
+                <p>She ran toward the forest, following the hidden path <strong>that her mentor had shown her</strong> many times. Deep inside the woods was a shrine <em>which was said to protect the kingdom</em>, and inside it, a sacred orb <strong>was kept</strong> for emergencies. When Liora reached the shrine, she saw that the door <strong>had been broken</strong> open.</p>
+
+                <p>Inside, the orb <em>was being taken</em> by a knight in dark armor <strong>whose cold stare made her heart tremble</strong>. Liora lifted her staff and cast a spell <strong>that had been taught to her</strong> since childhood. A bright flash hit the knight’s arm, and the orb <strong>was dropped</strong> onto the stone floor.</p>
+
+                <p>The knight stepped back into the shadows <strong>that covered the far end of the room</strong>, leaving a warning that the empire would soon rise again. Liora picked up the orb, realizing that the attack <strong>which had started in Eldenbrook</strong> was only the beginning.</p>
+
+                <p>When she walked out of the shrine, she saw royal soldiers <strong>who had been sent to protect the border</strong> running toward her. Their captain, a woman <strong>whose armor shone like silver</strong>, promised to guard her. Holding the orb tightly, Liora prepared for the long journey <strong>that would decide the future of the kingdom</strong>.</p>
+            </article>
+
+        </div>
+
+        <!-- QUESTION AREA -->
+        <div id="questionArea"></div>
+
+        <!-- NAVIGATION BUTTONS -->
+        <div class="nav-buttons">
+            <button id="prevBtn" onclick="prevQuestion()">Previous</button>
+            <button id="nextBtn" onclick="nextQuestion()">Next</button>
+        </div>
+
+        <!-- SUBMIT BUTTON -->
+        <div id="submitSection" class="hidden" style="text-align:center; margin-top:20px;">
+            <button onclick="submitQuiz()">Submit</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+/* -----------------------------
+    CONFIG
+--------------------------------*/
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzubYKZR_2m9WgzqwZuklp6rLtlJnRzDh8ZMEVTlibMZ3ttycY97o1-S9IPO8yhQqRUnw/exec";
+
+/* -----------------------------
+    QUESTIONS (filled)
+    - mcqQuestions contain 'answer' field (correct option text)
+--------------------------------*/
+const mcqQuestions = [
+  { id: "MCQ1", question: "Why was Eldenbrook usually peaceful before the attack?", options: ["Because the village was known for calm days","Because the people stayed inside their homes","Because soldiers watched every road","Because the weather kept enemies away","Because animals guarded the fields"], answer: "Because the village was known for calm days" },
+  { id: "MCQ2", question: "Why did enemies want Liora’s crest?", options: ["Because the crest was rare and valuable","Because the crest was bright and shiny","Because the crest was used for travel","Because the crest was easy to copy","Because the crest was only decoration"], answer: "Because the crest was rare and valuable" },
+  { id: "MCQ3", question: "What woke the villagers during the attack?", options: ["The loud sound of sudden flames","The voice of a traveling messenger","The call of a morning bird","The noise of rushing soldiers","The echo of bells from the tower"], answer: "The loud sound of sudden flames" },
+  { id: "MCQ4", question: "Where did Liora run after leaving her house?", options: ["To the forest path her mentor taught her","To the river behind the village","To the tall hill near the farms","To the old barn beside her home","To the wide field by the west gate"], answer: "To the forest path her mentor taught her" },
+  { id: "MCQ5", question: "What does the reader learn about Liora’s mentor?", options: ["The mentor prepared her for danger","The mentor lived far from Eldenbrook","The mentor disliked strong magic","The mentor avoided royal soldiers","The mentor wanted to leave the village"], answer: "The mentor prepared her for danger" },
+  { id: "MCQ6", question: "Why did the knight drop the orb?", options: ["Because Liora’s spell hit his arm","Because the orb felt too heavy","Because the floor was slippery","Because the soldiers shouted loudly","Because the light became too bright"], answer: "Because Liora’s spell hit his arm" },
+  { id: "MCQ7", question: "What does the adjective clause describe in “the path that her mentor had shown her”?", options: ["It describes which path she used","It describes how far she walked","It describes why she ran quickly","It describes who followed her","It describes when she learned it"], answer: "It describes which path she used" },
+  { id: "MCQ8", question: "Which sentence uses passive voice?", options: ["The shrine was broken open by force","Liora hurried through the deep forest","The knight carried the glowing orb","The captain guarded the young mage","The villagers watched the tall flames"], answer: "The shrine was broken open by force" },
+  { id: "MCQ9", question: "Which event happened first in the story?", options: ["The village was attacked before sunrise","The knight stepped back into the shadows","The soldiers arrived at the shrine","Liora picked up the dropped orb","The captain made a promise to her"], answer: "The village was attacked before sunrise" },
+  { id: "MCQ10", question: "Which option is in past tense?", options: ["She walked out of the shrine","She is walking through the woods","She walks across the field","She will walk to the border","She may walk to the village"], answer: "She walked out of the shrine" },
+  { id: "MCQ11", question: "What can we infer about the empire the knight mentioned?", options: ["It plans to rise and start a war","It wants peace with the kingdom","It has already been defeated","It controls nearby villages","It protects young mages"], answer: "It plans to rise and start a war" },
+  { id: "MCQ12", question: "Which sentence contains an adjective clause?", options: ["The captain, who wore shining armor, guarded her","The captain guarded her with care","The captain walked beside her","The captain watched the forest","The captain helped the soldiers"], answer: "The captain, who wore shining armor, guarded her" },
+  { id: "MCQ13", question: "Why did soldiers run toward Liora at the shrine?", options: ["Because they were sent to protect the border","Because they were looking for food","Because they were following a wild animal","Because they were searching for water","Because they were checking the forest"], answer: "Because they were sent to protect the border" },
+  { id: "MCQ14", question: "What does Liora prepare for at the end?", options: ["A long journey that will shape the kingdom","A short walk back to her village","A quiet rest inside the shrine","A small task that ends quickly","A talk with the royal captain"], answer: "A long journey that will shape the kingdom" },
+  { id: "MCQ15", question: "The clause “whose armor shone like silver” describes:", options: ["Who the captain is","Why the captain waited","How the captain moved","Where the captain walked","When the captain arrived"], answer: "Who the captain is" },
+  { id: "MCQ16", question: "What happened to the shrine door?", options: ["It had been broken open","It had been locked tight","It had been painted red","It had been moved aside","It had been cleaned well"], answer: "It had been broken open" },
+  { id: "MCQ17", question: "What made Liora’s heart tremble?", options: ["The knight’s cold stare","The sound of far thunder","The waving dark trees","The cries of birds","The rising morning wind"], answer: "The knight’s cold stare" },
+  { id: "MCQ18", question: "Which sentence shows passive voice?", options: ["The orb was kept inside the shrine","Liora carried the orb carefully","The captain led the soldiers","The knight walked to the altar","Her mentor taught her spells"], answer: "The orb was kept inside the shrine" },
+  { id: "MCQ19", question: "Why did Liora go to the shrine?", options: ["Because the shrine was said to protect the kingdom","Because the shrine was close to her home","Because the shrine stored warm clothes","Because the shrine held old books","Because the shrine had friendly guards"], answer: "Because the shrine was said to protect the kingdom" },
+  { id: "MCQ20", question: "What can we infer about Liora’s future?", options: ["She will help save the kingdom","She will return and forget the past","She will hide inside the forest","She will give the orb to traders","She will join the empire one day"], answer: "She will help save the kingdom" }
+];
+
+const essayQuestions = [
+  { id: "ESSAY1", question: "Explain why the shrine was important in the story. Use at least one past tense verb." },
+  { id: "ESSAY2", question: "Describe Liora’s reaction during the attack. Use one passive voice structure." },
+  { id: "ESSAY3", question: "What can you infer about the future conflict between the kingdom and the empire?" },
+  { id: "ESSAY4", question: "Write a sentence using an adjective clause about a character in the story, then explain why you wrote it." },
+  { id: "ESSAY5", question: "Why do you think the captain trusted Liora with the orb? Support your answer with details." }
+];
+
+/* -----------------------------
+    SHUFFLE + PREP
+--------------------------------*/
+function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+}
+
+// create a deep copy of mcqQuestions to avoid mutating original keys if needed later
+const mcqCopy = mcqQuestions.map(q => ({ ...q, options: [...q.options] }));
+
+shuffle(mcqCopy);
+mcqCopy.forEach(q => shuffle(q.options));
+shuffle(essayQuestions);
+
+// final sequence (20 MCQ then 5 essays but already shuffled)
+const allQuestions = [...mcqCopy, ...essayQuestions];
+
+let currentIndex = 0;
+let answers = {}; // saved answers keyed by question id
+
+/* -----------------------------
+    UI: start, load, save, nav
+--------------------------------*/
+function startQuiz() {
+    const name = document.getElementById("studentName").value.trim();
+    if (name === "") { alert("Please enter your name."); return; }
+
+    document.getElementById("landing").classList.add("hidden");
+    document.getElementById("quizPage").classList.remove("hidden");
+    updateProgress();
+    loadQuestion();
+}
+
+function updateProgress(){
+    const progress = document.getElementById("progressText");
+    progress.textContent = `Question ${currentIndex + 1} of ${allQuestions.length}`;
+}
+
+function loadQuestion() {
+    updateProgress();
+    const q = allQuestions[currentIndex];
+    const area = document.getElementById("questionArea");
+
+    let html = `<div class='question'><h3>${q.question}</h3>`;
+
+    if (q.options) {
+        html += `<div class='options'>`;
+        q.options.forEach(opt => {
+            const checked = answers[q.id] === opt ? "checked" : "";
+            html += `
+                <div>
+                    <label>
+                        <input type="radio" name="${q.id}" value="${escapeHtml(opt)}" ${checked}>
+                        ${escapeHtml(opt)}
+                    </label>
+                </div>`;
+        });
+        html += `</div>`;
+    } else {
+        const saved = answers[q.id] || "";
+        html += `<textarea name="${q.id}" rows="5">${escapeHtml(saved)}</textarea>`;
+    }
+
+    html += `</div>`;
+    area.innerHTML = html;
+
+    document.getElementById("prevBtn").style.visibility = currentIndex === 0 ? "hidden" : "visible";
+    document.getElementById("nextBtn").style.visibility = currentIndex === allQuestions.length - 1 ? "hidden" : "visible";
+
+    if (currentIndex === allQuestions.length - 1) {
+        document.getElementById("submitSection").classList.remove("hidden");
+    } else {
+        document.getElementById("submitSection").classList.add("hidden");
+    }
+}
+
+// simple HTML escape to avoid breaking attributes
+function escapeHtml(str){
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+}
+
+function saveCurrentAnswer() {
+    const q = allQuestions[currentIndex];
+
+    if (q.options) {
+        const chosen = document.querySelector(`input[name="${q.id}"]:checked`);
+        if (!chosen) {
+            alert("Please answer this question.");
+            return false;
+        }
+        // value was escaped when rendered, so use .value directly (it's plain text)
+        answers[q.id] = chosen.value;
+    } else {
+        const ta = document.querySelector(`textarea[name="${q.id}"]`);
+        const txt = ta ? ta.value.trim() : "";
+        if (txt === "") {
+            alert("Please answer this question.");
+            return false;
+        }
+        answers[q.id] = txt;
+    }
+    return true;
+}
+
+function nextQuestion() {
+    if (!saveCurrentAnswer()) return;
+    if (currentIndex < allQuestions.length - 1) {
+        currentIndex++;
+        loadQuestion();
+    }
+}
+
+function prevQuestion() {
+    // allow saving on prev even if not validated (we still require saving, so validate)
+    if (!saveCurrentAnswer()) return;
+    if (currentIndex > 0) {
+        currentIndex--;
+        loadQuestion();
+    }
+}
+
+/* -----------------------------
+    SUBMIT
+--------------------------------*/
+function computeScore() {
+    let score = 0;
+    mcqCopy.forEach((q) => {
+        const user = answers[q.id];
+        if (!user) return;
+        // Compare exact text (both are simple strings)
+        if (user === q.answer) score++;
+    });
+    return score;
+}
+
+function submitQuiz() {
+    // ensure last answer saved/validated
+    if (!saveCurrentAnswer()) return;
+
+    // Build payload
+    const payload = {};
+    payload["Name"] = document.getElementById("studentName").value.trim();
+
+    // Add all answers (empty string if somehow missing)
+    allQuestions.forEach(q => {
+        payload[q.id] = answers[q.id] || "";
+    });
+
+    // Include computed MCQ score
+    const score = computeScore();
+    payload["MCQ_Score"] = score + " / " + mcqCopy.length;
+
+    // Send to Web App
+    fetch(WEBAPP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+    })
+    .then(response => response.json ? response.json() : Promise.resolve({status:"success"}))
+    .then(data => {
+        if (data && data.status === "success") {
+            alert("Your answers have been submitted. Thank you!\nYour MCQ score: " + payload["MCQ_Score"]);
+            // Optionally lock the UI or redirect
+            document.getElementById("submitSection").innerHTML = "<strong>Submitted — thank you!</strong>";
+            document.getElementById("nextBtn").disabled = true;
+            document.getElementById("prevBtn").disabled = true;
+        } else {
+            alert("Submission error: " + (data && data.message ? data.message : JSON.stringify(data)));
+        }
+    })
+    .catch(err => {
+        alert("Connection error: " + err);
+    });
+}
+
+/* -----------------------------
+    Init: load nothing until user presses start
+--------------------------------*/
+</script>
+
+</body>
+</html>
