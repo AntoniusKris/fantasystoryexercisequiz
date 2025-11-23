@@ -76,7 +76,7 @@
 /* -----------------------------
     CONFIG
 --------------------------------*/
-const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzubYKZR_2m9WgzqwZuklp6rLtlJnRzDh8ZMEVTlibMZ3ttycY97o1-S9IPO8yhQqRUnw/exec";
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyY3lxEqH0rlxuL6eocgih2tNMn9lT5EhjDu-JwxhqvZuylFfyDSsgtlPTfz9ZPKq9rrA/exec";
 
 /* -----------------------------
     QUESTIONS (filled)
@@ -264,7 +264,7 @@ function submitQuiz() {
     const payload = {};
     payload["Name"] = document.getElementById("studentName").value.trim();
 
-    // Add all answers (empty string if somehow missing)
+    // Add all answers
     allQuestions.forEach(q => {
         payload[q.id] = answers[q.id] || "";
     });
@@ -273,29 +273,37 @@ function submitQuiz() {
     const score = computeScore();
     payload["MCQ_Score"] = score + " / " + mcqCopy.length;
 
-    // Send to Web App
+    // Create form data
+    const formData = new FormData();
+    for (const key in payload) {
+        formData.append(key, payload[key]);
+    }
+
+    // Send as form POST (no JSON, no preflight!)
     fetch(WEBAPP_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: formData
     })
-    .then(response => response.json ? response.json() : Promise.resolve({status:"success"}))
-    .then(data => {
-        if (data && data.status === "success") {
-            alert("Your answers have been submitted. Thank you!\nYour MCQ score: " + payload["MCQ_Score"]);
-            // Optionally lock the UI or redirect
-            document.getElementById("submitSection").innerHTML = "<strong>Submitted — thank you!</strong>";
-            document.getElementById("nextBtn").disabled = true;
-            document.getElementById("prevBtn").disabled = true;
-        } else {
-            alert("Submission error: " + (data && data.message ? data.message : JSON.stringify(data)));
+    .then(response => response.text())
+    .then(text => {
+        try {
+            const data = JSON.parse(text);
+            if (data && data.status === "success") {
+                alert("Your answers have been submitted. Thank you!\nYour MCQ score: " + payload["MCQ_Score"]);
+                document.getElementById("submitSection").innerHTML = "<strong>Submitted — thank you!</strong>";
+                document.getElementById("nextBtn").disabled = true;
+                document.getElementById("prevBtn").disabled = true;
+            } else {
+                alert("Submission error: " + (data && data.message ? data.message : text));
+            }
+        } catch (e) {
+            alert("Response: " + text);
         }
     })
     .catch(err => {
         alert("Connection error: " + err);
     });
 }
-
 /* -----------------------------
     Init: load nothing until user presses start
 --------------------------------*/
